@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.MNFIt" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="GymBlueDatePicker" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="colorAccent">@color/gym_blue</item>
+    </style>
 </resources>

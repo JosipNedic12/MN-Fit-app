@@ -59,7 +59,12 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
     // Lifecycle ViewModel Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    //Google maps
+    implementation ("com.google.maps.android:maps-compose:4.1.1")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
 
+    implementation ("com.google.android.material:material:1.11.0")
+    //implementation ("androidx.compose.material3:material3:1.4.0-alpha14")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
