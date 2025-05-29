@@ -8,14 +8,14 @@ plugins {
 android {
     namespace = "com.example.mnfit"
     compileSdk = 35
-
+    val MAPS_API_KEY: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
     defaultConfig {
         applicationId = "com.example.mnfit"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        manifestPlaceholders["mapsApiKey"] = MAPS_API_KEY
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
