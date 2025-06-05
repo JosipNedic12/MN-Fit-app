@@ -1,22 +1,31 @@
 package com.example.mnfit.viewmodel
 
-import androidx.compose.runtime.mutableStateOf
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.firestore
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import com.example.mnfit.model.User
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import com.example.mnfit.model.User
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class AuthViewModel : ViewModel() {
-    var authState by mutableStateOf<AuthState>(AuthState.Idle)
-        private set
-
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
+
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+
+    private val _fcmState = MutableStateFlow<FCMState>(FCMState.Idle)
+    val fcmState: StateFlow<FCMState> = _fcmState.asStateFlow()
+
+    private val _currentUserUid = MutableStateFlow<String?>(null)
+    val currentUserUid: StateFlow<String?> = _currentUserUid.asStateFlow()
+
+    private val _userRole = MutableStateFlow<String?>(null)
+    val userRole: StateFlow<String?> = _userRole.asStateFlow()
 
     fun register(
         email: String,
@@ -25,7 +34,7 @@ class AuthViewModel : ViewModel() {
         lastName: String,
         role: String
     ) {
-        authState = AuthState.Loading
+        _authState.value = AuthState.Loading
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -36,9 +45,8 @@ class AuthViewModel : ViewModel() {
                         firstName = firstName,
                         lastName = lastName,
                         role = role,
-                        createdAt = null // Will be set by Firestore server timestamp
+                        createdAt = null
                     )
-                    // Use a map to set server timestamp
                     val userMap = hashMapOf(
                         "uid" to user.uid,
                         "email" to user.email,
@@ -50,28 +58,55 @@ class AuthViewModel : ViewModel() {
                     firestore.collection("users").document(uid)
                         .set(userMap)
                         .addOnSuccessListener {
-                            authState = AuthState.Success
+                            subscribeToAllUsersTopic()
+                            _authState.value = AuthState.Success
                         }
                         .addOnFailureListener { e ->
-                            authState = AuthState.Error("Failed to save user: ${e.message}")
+                            _authState.value = AuthState.Error("Failed to save user: ${e.message}")
                         }
                 } else {
-                    authState = AuthState.Error(task.exception?.message ?: "Registration failed")
+                    _authState.value = AuthState.Error(task.exception?.message ?: "Registration failed")
                 }
             }
     }
 
     fun login(email: String, password: String) {
-        authState = AuthState.Loading
+        _authState.value = AuthState.Loading
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                authState = if (task.isSuccessful) AuthState.Success
-                else AuthState.Error(task.exception?.message ?: "Login failed")
+                if (task.isSuccessful) {
+                    subscribeToAllUsersTopic()
+                    _authState.value = AuthState.Success
+                } else {
+                    _authState.value = AuthState.Error(task.exception?.message ?: "Login failed")
+                }
             }
     }
 
+    private fun subscribeToAllUsersTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic("all_users")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Subscribed to all_users")
+                    _fcmState.value = FCMState.Success
+                } else {
+                    val errorMsg = task.exception?.localizedMessage ?: "FCM subscription failed"
+                    Log.d("FCM", "Subscribe failed: $errorMsg")
+                    _fcmState.value = FCMState.Error(errorMsg)
+                }
+            }
+    }
+
+    // Optional: Unsubscribe from topic on logout
+    fun logout() {
+        auth.signOut()
+        FirebaseMessaging.getInstance().unsubscribeFromTopic("all_users")
+        resetState()
+    }
+
     fun resetState() {
-        authState = AuthState.Idle
+        _authState.value = AuthState.Idle
+        _fcmState.value = FCMState.Idle
     }
 }
 
@@ -80,4 +115,10 @@ sealed class AuthState {
     object Loading : AuthState()
     object Success : AuthState()
     data class Error(val message: String) : AuthState()
+}
+
+sealed class FCMState {
+    object Idle : FCMState()
+    object Success : FCMState()
+    data class Error(val message: String) : FCMState()
 }

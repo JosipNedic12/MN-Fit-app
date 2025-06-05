@@ -64,7 +64,12 @@ dependencies {
     implementation ("com.google.android.gms:play-services-maps:18.2.0")
 
     implementation ("com.google.android.material:material:1.11.0")
-    //implementation ("androidx.compose.material3:material3:1.4.0-alpha14")
+
+    implementation ("com.google.firebase:firebase-messaging:24.0.0")
+    implementation(libs.firebase.functions)
+    implementation ("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation ("com.google.firebase:firebase-storage-ktx:20.3.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

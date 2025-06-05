@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MN Fit</string>
+    <string name="welcome_to_mnfit">Dobrodošli u MNFit!</string>
+    <string name="mnfit_is_your_destination_for_fitness_wellness_and_community_join_us_for_group_classes_personal_training_and_more">
+        MNFit je vaše odredište za fitness, wellness i zajednicu. Pridružite nam se na grupnim treninzima, osobnom treningu i još mnogo toga!
+    </string>
+    <string name="contact_us">Kontaktirajte nas</string>
+    <string name="email_contact">Email: info@mnfit.com</string>
+    <string name="phone_contact">Telefon: +385 1 2345 678</string>
+    <string name="instagram_contact">Instagram: @mnfit.gym</string>
+    <string name="our_location">Naša lokacija</string>
+    <string name="your_fitness_destination">Vaše fitness odredište</string>
+    <string name="terms">Termini</string>
+    <string name="add_term">Dodaj termin</string>
+    <string name="location">Lokacija: %1$s</string>
+    <string name="date">Datum: %1$s</string>
+    <string name="max_participants">Maksimalan broj sudionika: %1$s</string>
+    <string name="sign_up">Prijavi se</string>
+    <string name="sign_out">Odjavi se</string>
+    <string name="confirm_sign_up">Potvrdi prijavu</string>
+    <string name="are_you_sure_you_want_to_sign_up_for_term">Jeste li sigurni da se želite prijaviti za termin?</string>
+    <string name="yes_sign_up">Da, prijavi se</string>
+    <string name="cancel">Odustani</string>
+    <string name="confirm_sign_out">Potvrdi odjavu</string>
+    <string name="are_you_sure_you_want_to_leave_this_term">Jeste li sigurni da želite napustiti ovaj termin?</string>
+    <string name="yes_leave">Da, napusti</string>
+    <string name="title">Naslov</string>
+    <string name="description">Opis</string>
+    <string name="locationTerm">Lokacija</string>
+    <string name="max_participantsTerm">Maksimalan broj sudionika</string>
+    <string name="select_date">Odaberi datum</string>
+    <string name="select_time">Odaberi vrijeme</string>
+    <string name="add">Dodaj</string>
+    <string name="remove_term">Ukloni termin</string>
+    <string name="participants">Sudionici:</string>
+    <string name="no_one_signed_up_yet">Još nitko nije prijavljen.</string>
+    <string name="close">Zatvori</string>
+    <string name="confirm_delete">Potvrdi brisanje</string>
+    <string name="are_you_sure_you_want_to_delete_this_term">Jeste li sigurni da želite izbrisati ovaj termin?</string>
+    <string name="delete">Izbriši</string>
+    <string name="please_log_in_or_register_to_access_your_profile">Molimo prijavite se ili registrirajte za pristup profilu.</string>
+    <string name="login">Prijava</string>
+    <string name="register">Registracija</string>
+    <string name="manage_users">Upravljaj korisnicima</string>
+    <string name="logout">Odjava</string>
+    <string name="password">Lozinka</string>
+    <string name="email">Email</string>
+    <string name="don_t_have_an_account_register">Nemate račun? Registrirajte se</string>
+    <string name="first_name">Ime</string>
+    <string name="last_name">Prezime</string>
+    <string name="already_have_an_account_login">Već imate račun? Prijavite se</string>
+    <string name="go_back">Natrag</string>
+    <string name="search_by_name">Pretraži po imenu</string>
+    <string name="profile_picture">Profilna slika</string>
+    <string name="edit_profile_picture">Uredi profilnu sliku</string>
+    <string name="change_profile_picture">Promijeni profilnu sliku</string>
+    <string name="pick_from_gallery">Odaberi iz galerije</string>
+    <string name="take_a_photo">Slikaj se</string>
+    <string name="ok">U redu</string>
+    <string name="create_new_term">Napravi novi termin</string>
+
+</resources>

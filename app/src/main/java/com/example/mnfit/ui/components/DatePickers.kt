@@ -3,6 +3,8 @@ package com.example.mnfit.ui.components
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.example.mnfit.R
 import com.example.mnfit.ui.theme.gym_Blue
 import com.example.mnfit.ui.theme.gym_Coral
 import com.example.mnfit.ui.theme.gym_LightBlue
@@ -21,13 +23,13 @@ fun MyDatePickerDialog(
         confirmButton = {
             Button(onClick = { onDateSelected(datePickerState.selectedDateMillis) },
                 colors = ButtonDefaults.buttonColors(contentColor = gym_LightGray, containerColor = gym_LightBlue)) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(contentColor = gym_LightGray, containerColor = Color.Transparent)
-                ) { Text("Cancel") }
+                ) { Text(stringResource(R.string.cancel)) }
         }
     ) {
         DatePicker(

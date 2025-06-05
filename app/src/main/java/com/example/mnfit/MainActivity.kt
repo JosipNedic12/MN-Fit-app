@@ -4,6 +4,7 @@ import LoginScreen
 import MainBottomNavBar
 import RegisterScreen
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,8 +31,10 @@ import com.example.mnfit.ui.screens.HomeScreen
 import com.example.mnfit.ui.screens.ProfileScreen
 import com.example.mnfit.ui.theme.MNFItTheme
 import com.example.mnfit.model.Term
+import com.example.mnfit.ui.screens.AllUsersScreen
 import com.example.mnfit.ui.screens.TermsScreen
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +66,7 @@ fun MainApp() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.60f))
+                    .background(Color.Black.copy(alpha = 0.4f))
             )
             // NavHost content above the background, respects bottom bar
             NavHost(
@@ -76,6 +79,7 @@ fun MainApp() {
                 composable(BottomNavScreen.Profile.route) { ProfileScreen(navController) }
                 composable(Screen.Login.route) { LoginScreen(navController) }
                 composable(Screen.Register.route) { RegisterScreen(navController) }
+                composable(Screen.AllUsers.route) { AllUsersScreen(navController)}
             }
         }
     }

@@ -24,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.mnfit.R
 import com.example.mnfit.model.Term
 import com.example.mnfit.ui.theme.gym_Blue
 import java.text.SimpleDateFormat
@@ -59,13 +61,13 @@ fun TermCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(term.description, style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Location: ${term.location}", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.location, term.location), style = MaterialTheme.typography.bodySmall)
                 Text(
-                    "Date: ${dateFormat.format(Date(term.date))}",
+                    stringResource(R.string.date, dateFormat.format(Date(term.date))),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    "Max participants: ${term.maxParticipants}",
+                    stringResource(R.string.max_participants, term.maxParticipants),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -80,7 +82,7 @@ fun TermCard(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Sign Up")
+                    Text(stringResource(R.string.sign_up))
                 }
             } else {
                 Button(
@@ -93,20 +95,19 @@ fun TermCard(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Sign Out")
+                    Text(stringResource(R.string.sign_out))
                 }
             }
         }
     }
 
-    // Sign Up Confirmation Dialog
     if (showSignUpDialog) {
         AlertDialog(
             onDismissRequest = { showSignUpDialog = false },
-            title = { Text("Confirm Sign Up") },
+            title = { Text(stringResource(R.string.confirm_sign_up)) },
             text = {
                 Column {
-                    Text("Are you sure you want to sign up for term?")
+                    Text(stringResource(R.string.are_you_sure_you_want_to_sign_up_for_term))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(dateFormat.format(Date(term.date)), style = MaterialTheme.typography.titleMedium)
                 }
@@ -118,25 +119,24 @@ fun TermCard(
                         onSignUpClick()
                     }
                 ) {
-                    Text("Yes, Sign Up")
+                    Text(stringResource(R.string.yes_sign_up))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showSignUpDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
 
-    // Sign Out Confirmation Dialog
     if (showSignOutDialog) {
         AlertDialog(
             onDismissRequest = { showSignOutDialog = false },
-            title = { Text("Confirm Sign Out") },
+            title = { Text(stringResource(R.string.confirm_sign_out)) },
             text = {
                 Column {
-                    Text("Are you sure you want to leave this term?")
+                    Text(stringResource(R.string.are_you_sure_you_want_to_leave_this_term))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(dateFormat.format(Date(term.date)), style = MaterialTheme.typography.titleMedium)
                 }
@@ -148,12 +148,12 @@ fun TermCard(
                         onSignOutClick()
                     }
                 ) {
-                    Text("Yes, Leave")
+                    Text(stringResource(R.string.yes_leave))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showSignOutDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

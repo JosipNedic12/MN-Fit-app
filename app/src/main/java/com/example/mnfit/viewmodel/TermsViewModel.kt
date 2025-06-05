@@ -34,7 +34,7 @@ class TermsViewModel : ViewModel() {
     }
 
 
-    private fun listenForTerms() {
+    fun listenForTerms() {
         _isLoading.value = true
         listenerRegistration = db.collection("terms")
             .addSnapshotListener { snapshot, _ ->
@@ -104,6 +104,7 @@ class TermsViewModel : ViewModel() {
             .addOnSuccessListener { onResult(true, "You have left the term.") }
             .addOnFailureListener { onResult(false, "Failed to leave the term.") }
     }
+
     private val _currentUserUid = MutableStateFlow<String?>(FirebaseAuth.getInstance().currentUser?.uid)
     val currentUserUid: StateFlow<String?> = _currentUserUid.asStateFlow()
 
@@ -117,23 +118,6 @@ class TermsViewModel : ViewModel() {
     private val _userRole = MutableStateFlow<String?>(null)
     val userRole: StateFlow<String?> = _userRole.asStateFlow()
 
-    fun fetchUserRole(currentUserId: String?) {
-        if (currentUserId == null) {
-            _userRole.value = null
-            return
-        }
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(currentUserId)
-            .get()
-            .addOnSuccessListener { doc ->
-                _userRole.value = doc.getString("role")
-            }
-            .addOnFailureListener {
-                _userRole.value = null // or handle/log error
-            }
-    }
-
     private var userRoleListener: ListenerRegistration? = null
 
     fun listenForUserRole(currentUserId: String?) {
@@ -145,7 +129,11 @@ class TermsViewModel : ViewModel() {
         userRoleListener = FirebaseFirestore.getInstance()
             .collection("users")
             .document(currentUserId)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    _userRole.value = null
+                    return@addSnapshotListener
+                }
                 _userRole.value = snapshot?.getString("role")
             }
     }
@@ -166,4 +154,27 @@ class TermsViewModel : ViewModel() {
         super.onCleared()
         listenerRegistration?.remove()
     }
+    fun removeTerm(termId: String, onResult: (Boolean) -> Unit = {}) {
+        FirebaseFirestore.getInstance()
+            .collection("terms")
+            .document(termId)
+            .delete()
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { onResult(false) }
+    }
+
+    fun removeExpiredTerms() {
+        val now = System.currentTimeMillis()
+        FirebaseFirestore.getInstance()
+            .collection("terms")
+            .whereLessThan("date", now - 10 * 60 * 1000) // 10 minutes ago
+            .get()
+            .addOnSuccessListener { snapshot ->
+                for (doc in snapshot.documents) {
+                    doc.reference.delete()
+                }
+            }
+    }
+
 }
+

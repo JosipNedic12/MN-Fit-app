@@ -1,14 +1,16 @@
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
+package com.example.mnfit.ui.screens
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mnfit.R
@@ -16,10 +18,9 @@ import com.example.mnfit.model.Term
 import com.example.mnfit.ui.components.MyDatePickerDialog
 import com.example.mnfit.ui.components.MyTimePickerDialog
 import com.example.mnfit.ui.theme.gym_Blue
-import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.round
+
 
 @Composable
 fun AddTermDialog(
@@ -31,41 +32,38 @@ fun AddTermDialog(
     var description by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var maxParticipants by remember { mutableStateOf("") }
-
-    // Date and time state
     var dateMillis by remember { mutableStateOf<Long?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
-
     var showTimePicker by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf<Int?>(null) }
     var minute by remember { mutableStateOf<Int?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create New Term") },
+        title = { Text(stringResource(R.string.create_new_term)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = title, onValueChange = { title = it },
-                    label = { Text("Title") },
+                    label = { Text(stringResource(R.string.title)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 )
                 OutlinedTextField(
                     value = description, onValueChange = { description = it },
-                    label = { Text("Description") },
+                    label = { Text(stringResource(R.string.description)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 )
                 OutlinedTextField(
                     value = location, onValueChange = { location = it },
-                    label = { Text("Location") },
+                    label = { Text(stringResource(R.string.locationTerm)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 )
                 OutlinedTextField(
                     value = maxParticipants, onValueChange = { maxParticipants = it },
-                    label = { Text("Max Participants") },
+                    label = { Text(stringResource(R.string.max_participantsTerm)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
@@ -73,7 +71,6 @@ fun AddTermDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Date Picker Button
                 Button(
                     onClick = { showDatePicker = true },
                     colors = ButtonDefaults.buttonColors(
@@ -84,7 +81,7 @@ fun AddTermDialog(
                 ) {
                     Text(
                         if (dateMillis == null)
-                            "Select Date"
+                            stringResource(R.string.select_date)
                         else
                             java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault()).format(java.util.Date(dateMillis!!))
                     )
@@ -92,7 +89,6 @@ fun AddTermDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Time Picker Button
                 Button(
                     onClick = { showTimePicker = true },
                     colors = ButtonDefaults.buttonColors(
@@ -103,7 +99,7 @@ fun AddTermDialog(
                 ) {
                     Text(
                         if (hour == null || minute == null)
-                            "Select Time"
+                            stringResource(R.string.select_time)
                         else
                             String.format("%02d:%02d", hour, minute)
                     )
@@ -113,7 +109,6 @@ fun AddTermDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    // Combine dateMillis and hour/minute into a single timestamp
                     val cal = java.util.Calendar.getInstance()
                     if (dateMillis != null) cal.timeInMillis = dateMillis!!
                     cal.set(java.util.Calendar.HOUR_OF_DAY, hour ?: 0)
@@ -136,7 +131,7 @@ fun AddTermDialog(
                     contentColor = Color.White
                 ),
                 enabled = title.isNotBlank() && dateMillis != null && hour != null && minute != null
-            ) { Text("Add") }
+            ) { Text(stringResource(R.string.add)) }
         },
         dismissButton = {
             TextButton(
@@ -145,11 +140,9 @@ fun AddTermDialog(
                     containerColor = Color.Black.copy(alpha = 0f),
                     contentColor = Color.White
                 )
-            ) { Text("Cancel") }
+            ) { Text(stringResource(R.string.cancel)) }
         }
     )
-
-    // Show the Compose DatePicker dialog
     if (showDatePicker) {
         MyDatePickerDialog(
             onDateSelected = { millis ->
@@ -159,8 +152,6 @@ fun AddTermDialog(
             onDismiss = { showDatePicker = false }
         )
     }
-
-    // Show the Compose TimePicker dialog
     if (showTimePicker) {
         MyTimePickerDialog(
             onTimeSelected = { h, m ->
@@ -173,37 +164,59 @@ fun AddTermDialog(
     }
 }
 
+enum class ConfirmAction { SIGN_UP, DELETE }
 
 @Composable
 fun TermDetailsDialog(
     term: Term,
     currentUserUid: String?,
     participantNames: List<String>,
+    isTrainer: Boolean,
+    onRemoveTerm: (Term) -> Unit,
     onDismiss: () -> Unit,
     onSignUp: (Term) -> Unit,
     signUpMsg: String?
 ) {
     val dateFormat = remember { SimpleDateFormat("EEE, HH:mm", Locale.getDefault()) }
-    val fullDateFormat = remember { SimpleDateFormat("EEE, MMM d, HH:mm", Locale.getDefault()) }
     val isUserSignedUp = term.participants.contains(currentUserUid)
     val isFull = term.participants.size >= term.maxParticipants
 
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var confirmAction by remember { mutableStateOf(ConfirmAction.SIGN_UP) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(term.title) },
+        title = {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(term.title, modifier = Modifier.align(Alignment.CenterStart))
+                if (isTrainer) {
+                    IconButton(
+                        onClick = {
+                            confirmAction = ConfirmAction.DELETE
+                            showConfirmDialog = true
+                        },
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.remove_term),
+                            tint = Color.Red
+                        )
+                    }
+                }
+            }
+        },
         text = {
             Column {
                 Text(term.description)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Location: ${term.location}")
-                Text("Date: ${fullDateFormat.format(Date(term.date))}")
-                Text("Max participants: ${term.maxParticipants}")
+                Text(stringResource(R.string.location,term.location))
+                Text(stringResource(R.string.date,term.date))
+                Text(stringResource(R.string.max_participants,term.maxParticipants))
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Participants:", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.participants), style = MaterialTheme.typography.titleMedium)
                 if (participantNames.isEmpty()) {
-                    Text("No one signed up yet.")
+                    Text(stringResource(R.string.no_one_signed_up_yet))
                 } else {
                     participantNames.forEach { name ->
                         Text("• $name")
@@ -219,25 +232,39 @@ fun TermDetailsDialog(
             Row {
                 if (!isUserSignedUp && !isFull && currentUserUid != null) {
                     Button(
-                        onClick = { showConfirmDialog = true }
+                        onClick = {
+                            confirmAction = ConfirmAction.SIGN_UP
+                            showConfirmDialog = true
+                        }
                     ) {
-                        Text("Sign Up")
+                        Text(stringResource(R.string.sign_up))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                TextButton(onClick = onDismiss) { Text("Close") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
             }
         }
     )
 
-    // Confirmation dialog
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("Confirm Sign Up") },
+            title = {
+                Text(
+                    when (confirmAction) {
+                        ConfirmAction.SIGN_UP -> stringResource(R.string.confirm_sign_up)
+                        ConfirmAction.DELETE -> stringResource(R.string.confirm_delete)
+                    }
+                )
+            },
             text = {
                 Column {
-                    Text("Are you sure you want to sign up for term?")
+                    Text(
+                        when (confirmAction) {
+                            ConfirmAction.SIGN_UP -> stringResource(R.string.are_you_sure_you_want_to_sign_up_for_term)
+                            ConfirmAction.DELETE -> stringResource(R.string.are_you_sure_you_want_to_delete_this_term)
+                        }
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(dateFormat.format(Date(term.date)), style = MaterialTheme.typography.titleMedium)
                 }
@@ -246,12 +273,25 @@ fun TermDetailsDialog(
                 Button(
                     onClick = {
                         showConfirmDialog = false
-                        onSignUp(term)
+                        when (confirmAction) {
+                            ConfirmAction.SIGN_UP -> onSignUp(term)
+                            ConfirmAction.DELETE -> {
+                                onRemoveTerm(term)
+                                onDismiss()
+                            }
+                        }
                     }
-                ) { Text("Yes, Sign Up") }
+                ) {
+                    Text(
+                        when (confirmAction) {
+                            ConfirmAction.SIGN_UP -> stringResource(R.string.yes_sign_up)
+                            ConfirmAction.DELETE -> stringResource(R.string.delete)
+                        }
+                    )
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showConfirmDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

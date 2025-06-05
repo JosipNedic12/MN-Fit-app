@@ -1,5 +1,5 @@
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -7,8 +7,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,8 +19,8 @@ import com.example.mnfit.viewmodel.AuthViewModel
 import com.example.mnfit.viewmodel.AuthState
 import com.example.mnfit.navigation.Screen
 import com.example.mnfit.ui.theme.gym_Blue
-import com.example.mnfit.ui.theme.gym_LightBlue
 import com.example.mnfit.ui.theme.gym_LightGray
+import com.example.mnfit.viewmodel.FCMState
 
 @Composable
 fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
@@ -28,14 +29,15 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("subscriber") }
-    var roleMenuExpanded by remember { mutableStateOf(false) }
-    val state = authViewModel.authState
+    val context = LocalContext.current
 
+    val authState by authViewModel.authState.collectAsState()
+    val fcmState by authViewModel.fcmState.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // Foreground UI
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -48,12 +50,12 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
                 modifier = Modifier.size(100.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Register", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.register), style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(24.dp))
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { firstName = it },
-                label = { Text("First Name") },
+                label = { Text(stringResource(R.string.first_name)) },
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -61,7 +63,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { lastName = it },
-                label = { Text("Last Name") },
+                label = { Text(stringResource(R.string.last_name)) },
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -69,7 +71,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -77,36 +79,11 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(Modifier.fillMaxWidth()) {
-                OutlinedButton(
-                    onClick = { roleMenuExpanded = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text(role.replaceFirstChar { it.uppercase() }, color = gym_LightGray)
-                }
-                DropdownMenu(
-                    expanded = roleMenuExpanded,
-                    onDismissRequest = { roleMenuExpanded = false }
-                ) {
-                    listOf("owner", "trainer", "subscriber").forEach {
-                        DropdownMenuItem(
-                            text = { Text(it.replaceFirstChar { c -> c.uppercase() },
-                                color = gym_Blue)},
-                            onClick = {
-                                role = it
-                                roleMenuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = { authViewModel.register(email, password, firstName, lastName, role) },
@@ -117,24 +94,43 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel = 
                     contentColor = Color.White
                 )
             ) {
-                Text("Register")
+                Text(stringResource(R.string.register))
             }
             Spacer(modifier = Modifier.height(12.dp))
             TextButton(
                 onClick = { navController.navigate(Screen.Login.route) },
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("Already have an account? Login",
+                Text(
+                    stringResource(R.string.already_have_an_account_login),
                     color = gym_LightGray)
             }
-            when (state) {
-                is AuthState.Loading -> CircularProgressIndicator()
-                is AuthState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
+            when (authState) {
+                is AuthState.Loading -> {
+                    CircularProgressIndicator()
+                }
+                is AuthState.Error -> {
+                    LaunchedEffect(authState) {
+                        val message = (authState as AuthState.Error).message
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
                 is AuthState.Success -> {
                     LaunchedEffect(Unit) {
                         navController.navigate(Screen.Home.route) {
                             popUpTo(0)
                         }
+                    }
+                }
+                else -> {}
+            }
+
+
+            when (fcmState) {
+                is FCMState.Error -> {
+                    LaunchedEffect(fcmState) {
+                        val message = (fcmState as FCMState.Error).message
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     }
                 }
                 else -> {}

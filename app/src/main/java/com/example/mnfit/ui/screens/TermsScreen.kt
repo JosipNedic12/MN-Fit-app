@@ -1,13 +1,8 @@
 package com.example.mnfit.ui.screens
 
-import AddTermDialog
-import TermDetailsDialog
 import androidx.compose.foundation.Image
-
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -21,20 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mnfit.R
-import com.example.mnfit.model.Term
 import com.example.mnfit.ui.theme.gym_Blue
 import com.example.mnfit.viewmodel.TermsViewModel
-import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun TermsScreen(
     navController: NavController,
     termsViewModel: TermsViewModel = viewModel()
 ) {
-
     val terms by termsViewModel.terms.collectAsState()
     val isLoading by termsViewModel.isLoading.collectAsState()
     val selectedTerm by termsViewModel.selectedTerm.collectAsState()
@@ -44,7 +35,10 @@ fun TermsScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var signUpMsg by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(currentUserUid) {
+        termsViewModel.refreshCurrentUser()
         termsViewModel.listenForUserRole(currentUserUid)
+        termsViewModel.removeExpiredTerms()
+        termsViewModel.listenForTerms()
     }
     Box(
         modifier = Modifier
@@ -61,7 +55,7 @@ fun TermsScreen(
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    "Terms",
+                    stringResource(R.string.terms),
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White,
                     modifier = Modifier.weight(1f),
@@ -103,8 +97,6 @@ fun TermsScreen(
                 }
             }
         }
-
-        // FAB for trainers and owners
         if (userRole == "trainer" || userRole == "owner") {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
@@ -113,11 +105,9 @@ fun TermsScreen(
                     .padding(24.dp),
                 containerColor = gym_Blue
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Term")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_term))
             }
         }
-
-        // Dialog to add new term
         if (showAddDialog) {
             AddTermDialog(
                 onDismiss = { showAddDialog = false },
@@ -130,29 +120,36 @@ fun TermsScreen(
             )
         }
 
-        // Dialog for term details
         selectedTerm?.let { term ->
-            TermDetailsDialog(
-                term = term,
-                currentUserUid = currentUserUid,
-                participantNames = participantNames,
-                onDismiss = {
-                    signUpMsg = null
-                    termsViewModel.clearSelectedTerm()
-                },
-                onSignUp = { t ->
-                    termsViewModel.signUpForTerm(t) { success, msg ->
-                        signUpMsg = msg
-                        if (success) {
-                            val updatedTerm = terms.find { it.termId == t.termId }
-                            if (updatedTerm != null) {
-                                termsViewModel.selectTerm(updatedTerm)
+            if (terms.any { it.termId == term.termId }) {
+                TermDetailsDialog(
+                    term = term,
+                    currentUserUid = currentUserUid,
+                    participantNames = participantNames,
+                    isTrainer = userRole != "subscriber",
+                    onDismiss = {
+                        signUpMsg = null
+                        termsViewModel.clearSelectedTerm()
+                    },
+                    onRemoveTerm = { term ->
+                        termsViewModel.removeTerm(term.termId)
+                        signUpMsg = null
+                        termsViewModel.clearSelectedTerm()
+                    },
+                    onSignUp = { t ->
+                        termsViewModel.signUpForTerm(t) { success, msg ->
+                            signUpMsg = msg
+                            if (success) {
+                                val updatedTerm = terms.find { it.termId == t.termId }
+                                if (updatedTerm != null) {
+                                    termsViewModel.selectTerm(updatedTerm)
+                                }
                             }
                         }
-                    }
-                },
-                signUpMsg = signUpMsg
-            )
+                    },
+                    signUpMsg = signUpMsg
+                )
+            }
         }
     }
 }
