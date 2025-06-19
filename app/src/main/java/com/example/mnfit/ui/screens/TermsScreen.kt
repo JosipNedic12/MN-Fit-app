@@ -81,7 +81,7 @@ fun TermsScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(terms) { term ->
+                    items(terms.sortedBy { it.date }) { term ->
                         TermCard(
                             term = term,
                             isUserSignedUp = termsViewModel.isUserSignedUp(term),
