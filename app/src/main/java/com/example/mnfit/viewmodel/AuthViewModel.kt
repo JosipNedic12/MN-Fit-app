@@ -7,9 +7,14 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.example.mnfit.model.User
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class AuthViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
@@ -26,6 +31,24 @@ class AuthViewModel : ViewModel() {
 
     private val _userRole = MutableStateFlow<String?>(null)
     val userRole: StateFlow<String?> = _userRole.asStateFlow()
+
+    val isLoggedIn: StateFlow<Boolean> = _currentUserUid
+        .map { it != null }
+        .stateIn(
+            scope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
+            started = kotlinx.coroutines.flow.SharingStarted.Eagerly,
+            initialValue = auth.currentUser != null
+        )
+
+    init {
+        // Keep _currentUserUid up-to-date
+        _currentUserUid.value = auth.currentUser?.uid
+
+        // Listen for auth state changes (user logs in/out from another device)
+        auth.addAuthStateListener { firebaseAuth ->
+            _currentUserUid.value = firebaseAuth.currentUser?.uid
+        }
+    }
 
     fun register(
         email: String,

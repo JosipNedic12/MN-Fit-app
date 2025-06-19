@@ -16,11 +16,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,6 +40,7 @@ import com.example.mnfit.ui.theme.MNFItTheme
 import com.example.mnfit.model.Term
 import com.example.mnfit.ui.screens.AllUsersScreen
 import com.example.mnfit.ui.screens.TermsScreen
+import com.example.mnfit.viewmodel.AuthViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 
@@ -50,8 +58,27 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MainApp() {
+fun MainApp(authViewModel: AuthViewModel = viewModel()) {
     val navController = rememberNavController()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    // Keep track of whether we've already navigated to the correct start screen
+    var hasNavigated by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isLoggedIn) {
+        if (!hasNavigated) {
+            if (isLoggedIn) {
+                navController.navigate(BottomNavScreen.Home.route) {
+                    popUpTo(0)
+                }
+            } else {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0)
+                }
+            }
+            hasNavigated = true
+        }
+    }
+
     Scaffold(
         bottomBar = { MainBottomNavBar(navController, bottomNavItems) }
     ) { innerPadding ->

@@ -211,7 +211,7 @@ fun TermDetailsDialog(
                 Text(term.description)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(stringResource(R.string.location,term.location))
-                Text(stringResource(R.string.date,term.date))
+                Text(stringResource(R.string.date, dateFormat.format(Date(term.date))))
                 Text(stringResource(R.string.max_participants,term.maxParticipants))
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(stringResource(R.string.participants), style = MaterialTheme.typography.titleMedium)
